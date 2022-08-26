@@ -6,6 +6,7 @@ import android.os.StrictMode
 import androidx.core.os.ConfigurationCompat
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import au.com.shiftyjelly.pocketcasts.analytics.AnalyticsEvent
 import au.com.shiftyjelly.pocketcasts.analytics.AnalyticsTracker
 import au.com.shiftyjelly.pocketcasts.analytics.TracksAnalyticsTracker
 import au.com.shiftyjelly.pocketcasts.models.type.EpisodeStatusEnum
@@ -41,6 +42,7 @@ import io.reactivex.plugins.RxJavaPlugins
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -95,10 +97,19 @@ class PocketcastsApplication : Application(), Configuration.Provider {
         setupApp()
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     private fun setupAnalytics() {
         AnalyticsTracker.registerTracker(tracker)
         AnalyticsTracker.init(applicationContext)
         AnalyticsTracker.refreshMetadata()
+
+        AnalyticsTracker.track(AnalyticsEvent.APPLICATION_OPENED)
+        GlobalScope.launch {
+            delay(1000)
+            AnalyticsTracker.track(AnalyticsEvent.APPLICATION_OPENED)
+            delay(3000)
+            AnalyticsTracker.track(AnalyticsEvent.APPLICATION_OPENED)
+        }
     }
 
     private fun setupCrashlytics() {

@@ -3,7 +3,7 @@ package au.com.shiftyjelly.pocketcasts.analytics
 import android.content.Context
 import androidx.annotation.CallSuper
 import androidx.preference.PreferenceManager
-import au.com.shiftyjelly.pocketcasts.utils.minutes
+import au.com.shiftyjelly.pocketcasts.utils.seconds
 import au.com.shiftyjelly.pocketcasts.utils.timeIntervalSinceNow
 import dagger.hilt.android.qualifiers.ApplicationContext
 import timber.log.Timber
@@ -15,7 +15,7 @@ abstract class Tracker(@ApplicationContext private val appContext: Context) {
     abstract val anonIdPrefKey: String?
     /* The date the last event was tracked, used to determine when to regenerate the anonID */
     private var lastEventDate: Date? = null
-    private val anonIDInactivityTimeout: Long = 30.minutes()
+    private val anonIDInactivityTimeout: Long = 2.seconds()
     @CallSuper
     open fun track(event: AnalyticsEvent, properties: Map<String, *> = emptyMap<String, String>()) {
         regenerateAnonIDIfNeeded()
@@ -38,6 +38,7 @@ abstract class Tracker(@ApplicationContext private val appContext: Context) {
 
     private fun clearAnonID() {
         anonymousID = null
+        Timber.d("\uD83D\uDD35 Resetting anonID")
         val preferences = PreferenceManager.getDefaultSharedPreferences(appContext)
         if (preferences.contains(anonIdPrefKey)) {
             val editor = preferences.edit()
@@ -68,6 +69,7 @@ abstract class Tracker(@ApplicationContext private val appContext: Context) {
 
     private fun regenerateAnonIDIfNeeded() {
         lastEventDate?.let {
+            Timber.d("\uD83D\uDD35 Seconds since" + it.timeIntervalSinceNow())
             if (it.timeIntervalSinceNow() < anonIDInactivityTimeout) return
             clearAnonID()
             generateNewAnonID()
