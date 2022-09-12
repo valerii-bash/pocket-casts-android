@@ -49,12 +49,6 @@ class ServersModule {
 
         private val SERVER_CACHE_HOST = Settings.SERVER_CACHE_URL.removePrefix("https://")
 
-        val INTERCEPTOR_USER_AGENT = Interceptor { chain ->
-            val request = chain.request().newBuilder()
-            request.header("User-Agent", Settings.USER_AGENT_POCKETCASTS_SERVER)
-            chain.proceed(request.build())
-        }
-
         val INTERCEPTOR_CACHE_MODIFIER = Interceptor { chain ->
             val request = chain.request()
             val originalResponse = chain.proceed(request)
@@ -74,6 +68,12 @@ class ServersModule {
         @Volatile private var showNotesHttpClient: OkHttpClient? = null
         fun getShowNotesClient(context: Context): OkHttpClient {
             return showNotesHttpClient ?: createShowNotesCacheClient(context).also { showNotesHttpClient = it }
+        }
+
+        fun createUserAgentInterceptor(userAgent: String) = Interceptor { chain ->
+            val request = chain.request().newBuilder()
+            request.header("User-Agent", userAgent)
+            chain.proceed(request.build())
         }
 
         private fun createShowNotesCacheClient(context: Context): OkHttpClient {
@@ -123,10 +123,10 @@ class ServersModule {
     }
 
     @Provides
-    internal fun provideOkHttpClientBuilder(@SyncServerCache cache: Cache): OkHttpClient.Builder {
+    internal fun provideOkHttpClientBuilder(@SyncServerCache cache: Cache, settings: Settings): OkHttpClient.Builder {
         var builder = OkHttpClient.Builder()
             .addNetworkInterceptor(INTERCEPTOR_CACHE_MODIFIER)
-            .addNetworkInterceptor(INTERCEPTOR_USER_AGENT)
+            .addNetworkInterceptor(createUserAgentInterceptor(settings.getUserAgentPocketcastsServer()))
             .connectTimeout(60, TimeUnit.SECONDS)
             .writeTimeout(60, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)
@@ -200,12 +200,12 @@ class ServersModule {
     @Provides
     @NoCacheOkHttpClientBuilder
     @Singleton
-    internal fun provideOkHttpClientNoCacheBuilder(): OkHttpClient.Builder {
+    internal fun provideOkHttpClientNoCacheBuilder(settings: Settings): OkHttpClient.Builder {
         val dispatcher = Dispatcher()
         dispatcher.maxRequestsPerHost = 5
         var builder = OkHttpClient.Builder()
             .dispatcher(dispatcher)
-            .addNetworkInterceptor(INTERCEPTOR_USER_AGENT)
+            .addNetworkInterceptor(createUserAgentInterceptor(settings.getUserAgentPocketcastsServer()))
             .connectTimeout(60, TimeUnit.SECONDS)
             .writeTimeout(60, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)

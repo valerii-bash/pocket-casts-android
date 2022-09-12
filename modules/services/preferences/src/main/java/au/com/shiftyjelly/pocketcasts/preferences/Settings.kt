@@ -34,7 +34,7 @@ interface Settings {
         const val INFO_PRIVACY_URL = "https://support.pocketcasts.com/article/privacy-policy/"
         const val INFO_CANCEL_URL = "https://support.pocketcasts.com/article/subscription-info/"
 
-        const val USER_AGENT_POCKETCASTS_SERVER = "Pocket Casts/Android/" + BuildConfig.VERSION_NAME
+        const val USER_AGENT_POCKETCASTS_SERVER_PREFIX = "Pocket Casts/Android/"
 
         const val CHROME_CAST_APP_ID = "6D389446"
 
@@ -513,4 +513,8 @@ interface Settings {
 
     fun setTimesToShowBatteryWarning(value: Int)
     fun getTimesToShowBatteryWarning(): Int
+
+    fun getUserAgentPocketcastsServer(): String {
+        return "$USER_AGENT_POCKETCASTS_SERVER_PREFIX${getVersion()}"
+    }
 }

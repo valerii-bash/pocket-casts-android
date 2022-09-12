@@ -263,7 +263,7 @@ open class ServerManager @Inject constructor(
         val formBody = parameters.toFormBody()
         val request = Request.Builder()
             .url(url)
-            .header("User-Agent", Settings.USER_AGENT_POCKETCASTS_SERVER)
+            .header("User-Agent", settings.getUserAgentPocketcastsServer())
             .post(formBody)
             .build()
 
