@@ -65,18 +65,24 @@ import au.com.shiftyjelly.pocketcasts.ui.helper.FragmentHostListener
 import au.com.shiftyjelly.pocketcasts.views.fragments.BaseFragment
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import timber.log.Timber
 import au.com.shiftyjelly.pocketcasts.localization.R as LR
 import au.com.shiftyjelly.pocketcasts.ui.R as UR
 
 @AndroidEntryPoint
 class AboutFragment : BaseFragment() {
+    @Inject lateinit var settings: Settings
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         return ComposeView(requireContext()).apply {
             setContent {
                 AppThemeWithBackground(theme.activeTheme) {
-                    AboutPage(onBackPressed = { closeFragment() })
+                    AboutPage(
+                            versionName = settings.getVersion(),
+                            versionCode = settings.getVersionCode(),
+                            onBackPressed = { closeFragment() }
+                    )
                 }
             }
         }
@@ -154,7 +160,7 @@ private val icons = listOf(
 )
 
 @Composable
-private fun AboutPage(onBackPressed: () -> Unit) {
+private fun AboutPage(versionName: String, versionCode: Int, onBackPressed: () -> Unit) {
     val context = LocalContext.current
     val scrollState = rememberScrollState()
     Column(
@@ -172,7 +178,7 @@ private fun AboutPage(onBackPressed: () -> Unit) {
             modifier = Modifier.padding(top = 56.dp)
         )
         Text(
-            text = stringResource(LR.string.settings_version, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE.toString()),
+            text = stringResource(LR.string.settings_version, versionName, versionCode.toString()),
             style = MaterialTheme.typography.body1,
             modifier = Modifier.padding(top = 8.dp),
             color = MaterialTheme.theme.colors.primaryText02
@@ -376,5 +382,5 @@ private fun AppLogoImage(width: Dp, image: Painter, text: String, color: Color, 
 @Preview
 @Composable
 fun AboutPagePreview() {
-    AboutPage(onBackPressed = {})
+    AboutPage(versionName = "Version-Preview", versionCode = 12345, onBackPressed = {})
 }
