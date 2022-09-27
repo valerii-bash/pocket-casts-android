@@ -231,9 +231,9 @@ open class PlaybackService : MediaBrowserServiceCompat(), CoroutineScope {
             }
 
             // If we are already showing a notification, update it no matter the state.
-            if (notification != null && notificationHelper.isShowing(Settings.NotificationId.PLAYING.value)) {
+            if (notification != null && notificationHelper.isShowing(NotificationHelper.NOTIFICATION_ID_PLAYING)) {
                 Timber.d("Updating playback notification")
-                notificationManager.notify(Settings.NotificationId.PLAYING.value, notification)
+                notificationManager.notify(NotificationHelper.NOTIFICATION_ID_PLAYING, notification)
                 if (isForegroundService && (state == PlaybackStateCompat.STATE_PLAYING || state == PlaybackStateCompat.STATE_BUFFERING)) {
                     // Nothing else to do
                     return
@@ -247,7 +247,7 @@ open class PlaybackService : MediaBrowserServiceCompat(), CoroutineScope {
                 PlaybackStateCompat.STATE_PLAYING -> {
                     if (notification != null) {
                         try {
-                            startForeground(Settings.NotificationId.PLAYING.value, notification)
+                            startForeground(NotificationHelper.NOTIFICATION_ID_PLAYING, notification)
                             notificationManager.enteredForeground(notification)
                             LogBuffer.i(LogBuffer.TAG_PLAYBACK, "startForeground state: $state")
                         } catch (e: Exception) {
@@ -279,7 +279,7 @@ open class PlaybackService : MediaBrowserServiceCompat(), CoroutineScope {
                         }
 
                         if (notification != null && state == PlaybackStateCompat.STATE_PAUSED && isForegroundService) {
-                            notificationManager.notify(Settings.NotificationId.PLAYING.value, notification)
+                            notificationManager.notify(NotificationHelper.NOTIFICATION_ID_PLAYING, notification)
                             LogBuffer.i(LogBuffer.TAG_PLAYBACK, "stopForeground state: $state (update notification)")
                         } else {
                             LogBuffer.i(LogBuffer.TAG_PLAYBACK, "stopForeground state: $state removing notification: $removeNotification")
