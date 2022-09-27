@@ -120,4 +120,8 @@ class NotificationHelperImpl @Inject constructor(@ApplicationContext private val
         intent.putExtra(android.provider.Settings.EXTRA_CHANNEL_ID, EPISODE_NOTIFICATION_CHANNEL_ID)
         activity.startActivity(intent)
     }
+
+    override fun signInErrorChannelBuilder(): NotificationCompat.Builder {
+        return NotificationCompat.Builder(context, SIGN_IN_ERROR_CHANNEL_ID)
+    }
 }

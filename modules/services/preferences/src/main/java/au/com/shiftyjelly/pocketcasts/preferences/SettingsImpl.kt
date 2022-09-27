@@ -25,10 +25,9 @@ import au.com.shiftyjelly.pocketcasts.models.type.PodcastsSortType
 import au.com.shiftyjelly.pocketcasts.models.type.TrimMode
 import au.com.shiftyjelly.pocketcasts.preferences.Settings.Companion.DEFAULT_MAX_AUTO_ADD_LIMIT
 import au.com.shiftyjelly.pocketcasts.preferences.Settings.Companion.SETTINGS_ENCRYPT_SECRET
-import au.com.shiftyjelly.pocketcasts.preferences.Settings.NotificationChannel
-import au.com.shiftyjelly.pocketcasts.preferences.Settings.NotificationId
 import au.com.shiftyjelly.pocketcasts.preferences.di.PrivateSharedPreferences
 import au.com.shiftyjelly.pocketcasts.preferences.di.PublicSharedPreferences
+import au.com.shiftyjelly.pocketcasts.repositories.notification.NotificationHelper
 import au.com.shiftyjelly.pocketcasts.utils.extensions.isScreenReaderOn
 import au.com.shiftyjelly.pocketcasts.utils.log.LogBuffer
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
@@ -59,6 +58,7 @@ class SettingsImpl @Inject constructor(
     @PublicSharedPreferences private val sharedPreferences: SharedPreferences,
     @PrivateSharedPreferences private val privatePreferences: SharedPreferences,
     @ApplicationContext private val context: Context,
+    private val notificationHelper: NotificationHelper,
     private val moshi: Moshi
 ) : Settings {
 
@@ -637,7 +637,7 @@ class SettingsImpl @Inject constructor(
 
     private fun showSignInErrorNotification(intent: Intent) {
         val pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT.or(PendingIntent.FLAG_IMMUTABLE))
-        val notification = NotificationCompat.Builder(context, NotificationChannel.NOTIFICATION_CHANNEL_ID_SIGN_IN_ERROR.id)
+        val notification = notificationHelper.signInErrorChannelBuilder()
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setContentTitle(context.getString(LR.string.token_refresh_sign_in_error_title))
             .setContentText(context.getString(LR.string.token_refresh_sign_in_error_description))
@@ -647,7 +647,7 @@ class SettingsImpl @Inject constructor(
             .setContentIntent(pendingIntent)
             .build()
         NotificationManagerCompat.from(context)
-            .notify(NotificationId.SIGN_IN_ERROR.value, notification)
+            .notify(NotificationHelper.NOTIFICATION_ID_SIGN_IN_ERROR, notification)
     }
 
     override fun invalidateToken() {

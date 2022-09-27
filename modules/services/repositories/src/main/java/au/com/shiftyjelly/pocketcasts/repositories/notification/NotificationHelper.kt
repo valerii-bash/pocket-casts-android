@@ -20,5 +20,6 @@ interface NotificationHelper {
     fun playbackErrorChannelBuilder(): NotificationCompat.Builder
     fun podcastImportChannelBuilder(): NotificationCompat.Builder
     fun openEpisodeNotificationSettings(activity: Activity?)
+    fun signInErrorChannelBuilder(): NotificationCompat.Builder
     fun isShowing(notificationId: Int): Boolean
 }
