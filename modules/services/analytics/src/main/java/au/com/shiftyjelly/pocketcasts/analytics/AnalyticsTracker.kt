@@ -1,11 +1,14 @@
 package au.com.shiftyjelly.pocketcasts.analytics
 
-import android.content.SharedPreferences
+import android.content.Context
+import androidx.preference.PreferenceManager
+import dagger.hilt.android.qualifiers.ApplicationContext
 
 object AnalyticsTracker {
     private const val PREFKEY_SEND_USAGE_STATS = "pc_pref_send_usage_stats"
     private val trackers: MutableList<Tracker> = mutableListOf()
-    private lateinit var preferences: SharedPreferences
+    @ApplicationContext
+    private lateinit var appContext: Context
 
     var sendUsageStats: Boolean = true
         set(value) {
@@ -18,14 +21,16 @@ object AnalyticsTracker {
             }
         }
 
-    fun init(preferences: SharedPreferences) {
-        this.preferences = preferences
+    fun init(@ApplicationContext appContext: Context) {
+        this.appContext = appContext
         trackers.forEach { it.clearAllData() }
-        sendUsageStats = preferences.getBoolean(PREFKEY_SEND_USAGE_STATS, true)
+        val prefs = PreferenceManager.getDefaultSharedPreferences(appContext)
+        sendUsageStats = prefs.getBoolean(PREFKEY_SEND_USAGE_STATS, true)
     }
 
     private fun storeUsagePref() {
-        preferences.edit().putBoolean(PREFKEY_SEND_USAGE_STATS, sendUsageStats).apply()
+        val prefs = PreferenceManager.getDefaultSharedPreferences(appContext)
+        prefs.edit().putBoolean(PREFKEY_SEND_USAGE_STATS, sendUsageStats).apply()
     }
 
     fun registerTracker(tracker: Tracker?) {
