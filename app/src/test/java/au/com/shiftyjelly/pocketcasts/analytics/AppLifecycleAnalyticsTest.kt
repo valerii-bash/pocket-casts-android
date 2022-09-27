@@ -3,7 +3,6 @@ package au.com.shiftyjelly.pocketcasts.analytics
 import android.content.Context
 import au.com.shiftyjelly.pocketcasts.analytics.AppLifecycleAnalytics.Companion.KEY_PREVIOUS_VERSION_CODE
 import au.com.shiftyjelly.pocketcasts.analytics.AppLifecycleAnalytics.Companion.KEY_TIME_IN_APP
-import au.com.shiftyjelly.pocketcasts.preferences.Settings
 import au.com.shiftyjelly.pocketcasts.utils.PackageUtil
 import dagger.hilt.android.qualifiers.ApplicationContext
 import org.junit.Before
@@ -29,9 +28,6 @@ class AppLifecycleAnalyticsTest {
     private lateinit var context: Context
 
     @Mock
-    private lateinit var settings: Settings
-
-    @Mock
     private lateinit var packageUtil: PackageUtil
 
     @Mock
@@ -42,7 +38,6 @@ class AppLifecycleAnalyticsTest {
     fun setUp() {
         appLifecycleAnalytics = AppLifecycleAnalytics(
             context,
-            settings,
             packageUtil,
             analyticsTracker
         )
@@ -52,18 +47,14 @@ class AppLifecycleAnalyticsTest {
 
     @Test
     fun `given no version code in prefs, when app launched, then app installed event fired`() {
-        whenever(settings.getMigratedVersionCode()).thenReturn(VERSION_CODE_DEFAULT)
-
-        appLifecycleAnalytics.onApplicationInstalledOrUpgraded()
+        appLifecycleAnalytics.onApplicationInstalledOrUpgraded(oldVersionCode = VERSION_CODE_DEFAULT)
 
         verify(analyticsTracker).track(AnalyticsEvent.APPLICATION_INSTALLED)
     }
 
     @Test
     fun `given version code in prefs, when app launched, then app installed event not fired`() {
-        whenever(settings.getMigratedVersionCode()).thenReturn(VERSION_CODE_AFTER_FIRST_INSTALL)
-
-        appLifecycleAnalytics.onApplicationInstalledOrUpgraded()
+        appLifecycleAnalytics.onApplicationInstalledOrUpgraded(oldVersionCode = VERSION_CODE_AFTER_FIRST_INSTALL)
 
         verify(analyticsTracker, never()).track(AnalyticsEvent.APPLICATION_INSTALLED)
     }
@@ -72,21 +63,18 @@ class AppLifecycleAnalyticsTest {
 
     @Test
     fun `given no version code in prefs, when app launched, then app updated event not fired`() {
-        whenever(settings.getMigratedVersionCode()).thenReturn(VERSION_CODE_DEFAULT)
-
-        appLifecycleAnalytics.onApplicationInstalledOrUpgraded()
+        appLifecycleAnalytics.onApplicationInstalledOrUpgraded(oldVersionCode = VERSION_CODE_DEFAULT)
 
         verify(analyticsTracker, never()).track(eq(AnalyticsEvent.APPLICATION_UPDATED), any())
     }
 
     @Test
     fun `given current and last version code different, when app launched, then app updated event fired`() {
-        whenever(settings.getMigratedVersionCode()).thenReturn(VERSION_CODE_AFTER_FIRST_INSTALL)
         whenever(packageUtil.getVersionCode(anyOrNull())).thenReturn(
             VERSION_CODE_AFTER_SECOND_INSTALL
         )
 
-        appLifecycleAnalytics.onApplicationInstalledOrUpgraded()
+        appLifecycleAnalytics.onApplicationInstalledOrUpgraded(oldVersionCode = VERSION_CODE_AFTER_FIRST_INSTALL)
 
         verify(analyticsTracker)
             .track(
@@ -97,12 +85,11 @@ class AppLifecycleAnalyticsTest {
 
     @Test
     fun `given current and last version code same, when app launched, then app updated event not fired`() {
-        whenever(settings.getMigratedVersionCode()).thenReturn(VERSION_CODE_AFTER_SECOND_INSTALL)
         whenever(packageUtil.getVersionCode(anyOrNull())).thenReturn(
             VERSION_CODE_AFTER_SECOND_INSTALL
         )
 
-        appLifecycleAnalytics.onApplicationInstalledOrUpgraded()
+        appLifecycleAnalytics.onApplicationInstalledOrUpgraded(oldVersionCode = VERSION_CODE_AFTER_SECOND_INSTALL)
 
         verify(analyticsTracker, never()).track(eq(AnalyticsEvent.APPLICATION_UPDATED), any())
     }

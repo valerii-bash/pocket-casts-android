@@ -1,7 +1,6 @@
 package au.com.shiftyjelly.pocketcasts.analytics
 
 import android.content.Context
-import au.com.shiftyjelly.pocketcasts.preferences.Settings
 import au.com.shiftyjelly.pocketcasts.utils.PackageUtil
 import au.com.shiftyjelly.pocketcasts.utils.timeIntervalSinceNow
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -11,17 +10,15 @@ import javax.inject.Inject
 
 class AppLifecycleAnalytics @Inject constructor(
     @ApplicationContext private val appContext: Context,
-    private val settings: Settings,
     private val packageUtil: PackageUtil,
     private val analyticsTracker: AnalyticsTrackerWrapper
 ) {
     /* The date the app was last opened, used for calculating time in app */
     private var applicationOpenedDate: Date? = null
 
-    fun onApplicationInstalledOrUpgraded() {
+    fun onApplicationInstalledOrUpgraded(oldVersionCode: Int) {
         // Track app upgrade and install
         val versionCode = packageUtil.getVersionCode(appContext)
-        val oldVersionCode = settings.getMigratedVersionCode()
 
         if (oldVersionCode == 0) {
             // Track application installed if there isn't old version code
