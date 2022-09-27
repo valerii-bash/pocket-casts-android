@@ -537,7 +537,4 @@ interface Settings {
 
     fun setTimesToShowBatteryWarning(value: Int)
     fun getTimesToShowBatteryWarning(): Int
-
-    fun setSendUsageStats(value: Boolean)
-    fun getSendUsageStats(): Boolean
 }
