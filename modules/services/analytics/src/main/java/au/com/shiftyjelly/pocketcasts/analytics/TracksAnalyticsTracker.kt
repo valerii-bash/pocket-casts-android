@@ -3,7 +3,6 @@ package au.com.shiftyjelly.pocketcasts.analytics
 import android.content.Context
 import android.content.SharedPreferences
 import au.com.shiftyjelly.pocketcasts.models.to.SubscriptionStatus
-import au.com.shiftyjelly.pocketcasts.preferences.Settings
 import au.com.shiftyjelly.pocketcasts.preferences.di.PublicSharedPreferences
 import au.com.shiftyjelly.pocketcasts.utils.DisplayUtil
 import com.automattic.android.tracks.TracksClient
@@ -16,16 +15,18 @@ class TracksAnalyticsTracker @Inject constructor(
     @ApplicationContext appContext: Context,
     @PublicSharedPreferences preferences: SharedPreferences,
     private val displayUtil: DisplayUtil,
-    private val settings: Settings,
 ) : Tracker(preferences) {
     private val tracksClient: TracksClient? = TracksClient.getClient(appContext)
     override val anonIdPrefKey: String = TRACKS_ANON_ID
+
+    private var cachedSubscriptionStatus: (() -> SubscriptionStatus?)? = null
+    private var isLoggedIn = { false }
     private val plusSubscription: SubscriptionStatus.Plus?
-        get() = settings.getCachedSubscription() as? SubscriptionStatus.Plus
+        get() = cachedSubscriptionStatus?.invoke() as? SubscriptionStatus.Plus
 
     private val predefinedEventProperties: Map<String, Any>
         get() {
-            val isLoggedIn = settings.isLoggedIn()
+            val isLoggedIn = isLoggedIn.invoke()
             val hasSubscription = plusSubscription != null
             val hasLifetime = plusSubscription?.isLifetimePlus
                 ?: false
@@ -46,6 +47,11 @@ class TracksAnalyticsTracker @Inject constructor(
                 PredefinedEventProperty.PLUS_SUBSCRIPTION_FREQUENCY to subscriptionFrequency,
             ).mapKeys { it.key.analyticsKey }
         }
+
+    fun setup(cachedSubscriptionStatus: (() -> SubscriptionStatus?)?, isLoggedIn: () -> Boolean) {
+        this.cachedSubscriptionStatus = cachedSubscriptionStatus
+        this.isLoggedIn = isLoggedIn
+    }
 
     override fun track(event: AnalyticsEvent, properties: Map<String, Any>) {
         super.track(event, properties)

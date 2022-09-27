@@ -8,6 +8,7 @@ import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import au.com.shiftyjelly.pocketcasts.analytics.AnalyticsTracker
 import au.com.shiftyjelly.pocketcasts.analytics.TracksAnalyticsTracker
+import au.com.shiftyjelly.pocketcasts.models.to.SubscriptionStatus
 import au.com.shiftyjelly.pocketcasts.models.type.EpisodeStatusEnum
 import au.com.shiftyjelly.pocketcasts.preferences.Settings
 import au.com.shiftyjelly.pocketcasts.preferences.di.PublicSharedPreferences
@@ -97,6 +98,7 @@ class PocketcastsApplication : Application(), Configuration.Provider {
     }
 
     private fun setupAnalytics() {
+        tracker.setup(::getCachedSubscriptionStatus, ::isLoggedIn)
         AnalyticsTracker.registerTracker(tracker)
         AnalyticsTracker.init(preferences)
         AnalyticsTracker.refreshMetadata()
@@ -238,4 +240,7 @@ class PocketcastsApplication : Application(), Configuration.Provider {
             }
         }
     }
+
+    private fun getCachedSubscriptionStatus() = settings.getCachedSubscription() as? SubscriptionStatus.Plus
+    private fun isLoggedIn() = settings.isLoggedIn()
 }
