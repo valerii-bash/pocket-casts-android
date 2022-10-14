@@ -1,19 +1,16 @@
-package au.com.shiftyjelly.pocketcasts.analytics
+package au.com.shiftyjelly.pocketcasts.utils
 
 import android.os.Bundle
 import androidx.core.os.bundleOf
-import au.com.shiftyjelly.pocketcasts.preferences.Settings
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.FirebaseAnalytics.Event
 import com.google.firebase.analytics.FirebaseAnalytics.Param
 import timber.log.Timber
 
-object FirebaseAnalyticsTracker {
+object AnalyticsHelper {
     private lateinit var firebaseAnalytics: FirebaseAnalytics
-    private lateinit var settings: Settings
-    fun setup(analytics: FirebaseAnalytics, settings: Settings) {
+    fun setup(analytics: FirebaseAnalytics) {
         firebaseAnalytics = analytics
-        this.settings = settings
     }
 
     fun openedFeaturedPodcast() {
@@ -29,7 +26,7 @@ object FirebaseAnalyticsTracker {
         params.putString("list_id", listId)
         params.putString("podcast_uuid", podcastUuid)
 
-        bumpStat("discover_list_episode_play", params)
+        logEvent("discover_list_episode_play", params)
     }
 
     fun podcastEpisodeTappedFromList(listId: String, podcastUuid: String, episodeUuid: String) {
@@ -38,7 +35,7 @@ object FirebaseAnalyticsTracker {
             putString("podcast_uuid", podcastUuid)
             putString("episode_uuid", episodeUuid)
         }
-        bumpStat("discover_list_podcast_episode_tap", params)
+        logEvent("discover_list_podcast_episode_tap", params)
     }
 
     fun podcastSubscribedFromList(listId: String, podcastUuid: String) {
@@ -46,7 +43,7 @@ object FirebaseAnalyticsTracker {
         params.putString("list_id", listId)
         params.putString("podcast_uuid", podcastUuid)
 
-        bumpStat("discover_list_podcast_subscribe", params)
+        logEvent("discover_list_podcast_subscribe", params)
     }
 
     fun podcastTappedFromList(listId: String, podcastUuid: String) {
@@ -54,21 +51,21 @@ object FirebaseAnalyticsTracker {
         params.putString("list_id", listId)
         params.putString("podcast_uuid", podcastUuid)
 
-        bumpStat("discover_list_podcast_tap", params)
+        logEvent("discover_list_podcast_tap", params)
     }
 
     fun listShowAllTapped(listId: String) {
         val params = Bundle()
         params.putString("list_id", listId)
 
-        bumpStat("discover_list_show_all", params)
+        logEvent("discover_list_show_all", params)
     }
 
     fun listImpression(listId: String) {
         val params = Bundle()
         params.putString("list_id", listId)
 
-        bumpStat("discover_list_impression", params)
+        logEvent("discover_list_impression", params)
     }
 
     fun listShared(listId: String) {
@@ -260,15 +257,9 @@ object FirebaseAnalyticsTracker {
         logEvent("folder_created")
     }
 
-    private fun bumpStat(name: String, bundle: Bundle? = Bundle()) {
-        firebaseAnalytics.logEvent(name, bundle)
-    }
-
     private fun logEvent(name: String, bundle: Bundle? = Bundle()) {
-        if (settings.getSendUsageStats()) {
-            firebaseAnalytics.logEvent(name, bundle)
+        firebaseAnalytics.logEvent(name, bundle)
 
-            Timber.d("Analytic event $name $bundle")
-        }
+        Timber.d("Analytic event $name $bundle")
     }
 }
